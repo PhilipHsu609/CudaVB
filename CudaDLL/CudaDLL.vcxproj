@@ -80,12 +80,14 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="convolution.cu" />
     <CudaCompile Include="cvt_color.cu" />
     <CudaCompile Include="vec.cu" />
     <CudaCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="helper_cuda.h" />

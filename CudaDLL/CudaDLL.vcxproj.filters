@@ -18,9 +18,15 @@
     <CudaCompile Include="cvt_color.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="convolution.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
