@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iterator>
 #include <algorithm>
+#include <vector>
 
 template<typename T>
 void printData(T &container) {
@@ -14,5 +15,10 @@ void printData(T &container) {
 	});
 	std::cout << std::endl;
 }
+
+void rgb2bgr(std::vector<uint8_t> &image);
+void bgr2rgb(std::vector<uint8_t> &image);
+
+std::vector<float> gaussianKernel(int kernelSize, float sigma);
 
 #endif // !UTILS_H

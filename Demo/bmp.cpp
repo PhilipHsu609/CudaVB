@@ -50,12 +50,11 @@ BMP loadBMP(const std::string &filename) {
 
 	ifile.seekg(bmp.fileHeader.bfOffBits, ifile.beg);
 
-	bmp.image.resize(bmp.width() * bmp.height() * bmp.step());
+	bmp.dataVec.resize(bmp.width() * bmp.height() * bmp.step());
 
 	uint32_t padding = 4 - bmp.stride() % 4;
 	for (int y = bmp.height() - 1; y >= 0; y--) {
-		ifile.read((char *)(bmp.image.data() + y * bmp.stride()), bmp.stride());
-
+		ifile.read((char *)(bmp.dataVec.data() + y * bmp.stride()), bmp.stride());
 		if (padding != 4) {
 			ifile.seekg(padding, ifile.cur);
 		}
@@ -85,7 +84,7 @@ void saveBMP(const std::string &filename, const BMP &bmp) {
 
 	uint32_t padding = 4 - bmp.stride() % 4;
 	for (int y = bmp.height() - 1; y >= 0; y--) {
-		ofile.write((char *)(bmp.image.data() + y * bmp.stride()), bmp.stride());
+		ofile.write((char *)(bmp.dataVec.data() + y * bmp.stride()), bmp.stride());
 		if (padding != 4) {
 			ofile.seekp(padding, ofile.cur);
 		}

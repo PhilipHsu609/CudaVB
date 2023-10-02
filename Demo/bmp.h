@@ -13,7 +13,7 @@ const std::string LENA_GRAY{ "lena_gray.bmp" };
 struct BMP {
 	BITMAPFILEHEADER fileHeader;
 	BITMAPINFOHEADER infoHeader;
-	std::vector<uint8_t> image;
+	std::vector<uint8_t> dataVec;
 
 	size_t width() const { return infoHeader.biWidth; }
 	size_t height() const { return infoHeader.biHeight; }
