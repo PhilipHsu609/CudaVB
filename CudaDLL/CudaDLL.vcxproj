@@ -82,6 +82,7 @@
   <ItemGroup>
     <CudaCompile Include="convolution.cu" />
     <CudaCompile Include="cvt_color.cu" />
+    <CudaCompile Include="morph.cu" />
     <CudaCompile Include="vec.cu" />
     <CudaCompile Include="utils.cpp" />
   </ItemGroup>

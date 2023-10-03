@@ -21,6 +21,9 @@
     <CudaCompile Include="convolution.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="morph.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h">

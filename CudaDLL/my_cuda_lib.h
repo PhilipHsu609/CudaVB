@@ -44,4 +44,20 @@ extern "C" DLL_EXPORT void rgb2hsvCuda(const uint8_t *src, uint8_t *dst, int wid
 extern "C" DLL_EXPORT void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 extern "C" DLL_EXPORT void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 
+/*
+    * Dilation
+    *
+    * Note: Kernel is a 0/1 square matrix
+*/
+extern "C" DLL_EXPORT void dilateCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
+extern "C" DLL_EXPORT void dilateCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
+
+/*
+    * Erosion
+    *
+    * Note: Kernel is a 0/1 square matrix
+*/
+extern "C" DLL_EXPORT void erodeCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
+extern "C" DLL_EXPORT void erodeCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
+
 #endif // !MY_CUDA_LIB_H
