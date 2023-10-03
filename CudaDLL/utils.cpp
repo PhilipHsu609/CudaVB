@@ -74,14 +74,14 @@ std::vector<uint8_t> padding2D(
     // 2: reflect
     // 3: reflect_101
 
-    int targetWidth = (width + left + right) * channels;
+    int targetWidth = width + left + right;
     int targetHeight = height + top + bottom;
 
-    std::vector<uint8_t> target(targetWidth * targetHeight, value);
+    std::vector<uint8_t> target(targetWidth * targetHeight * channels, value);
 
     for (int y = 0; y < height; y++) {
         const uint8_t *src_row = &src[y * width * channels];
-        uint8_t *target_row = &target[(y + top) * targetWidth + left * channels];
+        uint8_t *target_row = &target[((y + top) * targetWidth + left) * channels];
         std::copy(src_row, src_row + width * channels, target_row);
     }
 
@@ -93,24 +93,24 @@ std::vector<uint8_t> padding2D(
             int j = borderInterpolate(x - left, width, borderType) * channels;
             uint8_t *target_row = target.data();
             for (int c = 0; c < channels; c++)
-                target_row[(y + top) * targetWidth + x * channels + c] = target[(y + top) * targetWidth + left * channels + j + c];
+                target_row[((y + top) * targetWidth + x) * channels + c] = target[((y + top) * targetWidth + left) * channels + j + c];
         }
         for (int x = 0; x < right; x++) {
             int j = borderInterpolate(x + width, width, borderType) * channels;
             uint8_t *target_row = target.data();
             for (int c = 0; c < channels; c++)
-                target_row[(y + top) * targetWidth + (x + left + width) * channels + c] = target[(y + top) * targetWidth + left * channels + j + c];
+                target_row[((y + top) * targetWidth + (x + left + width)) * channels + c] = target[((y + top) * targetWidth + left) * channels + j + c];
         }
     }
 
     for (int y = 0; y < top; y++) {
         int j = borderInterpolate(y - top, height, borderType);
-        std::copy(&target[(j + top) * targetWidth], &target[(j + top) * targetWidth + targetWidth], &target[y * targetWidth]);
+        std::copy(&target[(j + top) * targetWidth * channels], &target[(j + top + 1) * targetWidth * channels], &target[y * targetWidth * channels]);
     }
 
     for (int y = 0; y < bottom; y++) {
         int j = borderInterpolate(y + height, height, borderType);
-        std::copy(&target[(j + top) * targetWidth], &target[(j + top) * targetWidth + targetWidth], &target[(y + top + height) * targetWidth]);
+        std::copy(&target[(j + top) * targetWidth * channels], &target[(j + top + 1) * targetWidth * channels], &target[(y + top + height) * targetWidth * channels]);
     }
 
     return target;

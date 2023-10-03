@@ -75,7 +75,7 @@ __global__ void binarizeKernel(const uint8_t *src, uint8_t *dst, int width, int 
 
 	if (x < width && y < height) {
 		int i = y * width + x;
-		dst[i] = src[i] > threshold ? 255 : 0;
+		dst[i] = src[i] >= threshold ? 0xFF : 0x00;
 	}
 }
 
@@ -176,6 +176,6 @@ void rgb2grayCpu(const uint8_t *src, uint8_t *dst, int width, int height) {
 
 void binarizeCpu(const uint8_t *src, uint8_t *dst, int width, int height, uint8_t threshold) {
 	for (int i = 0; i < width * height; i++) {
-		dst[i] = src[i] > threshold ? 255 : 0;
+		dst[i] = src[i] >= threshold ? 0xFF : 0x00;
 	}
 }

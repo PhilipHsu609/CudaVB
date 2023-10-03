@@ -12,10 +12,11 @@
 extern "C" void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 extern "C" void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 
-__global__ void conv2DKernel(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
+__global__ void conv2DKernel(const uint8_t *paddedSrc, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 
-__global__ void conv2DKernel(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
+__global__ void conv2DKernel(const uint8_t *paddedSrc, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
 	int kernelRadius = kernelSize >> 1;
+	int paddedWidth = width + 2 * kernelRadius;
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
 
@@ -30,7 +31,7 @@ __global__ void conv2DKernel(const uint8_t *src, uint8_t *dst, int channels, int
 				int srcX = x + kx;
 				int srcY = y + ky;
 
-				sum += src[(srcY * (width + 2 * kernelRadius) + srcX) * channels + c] * kernel[ky * kernelSize + kx];
+				sum += paddedSrc[(srcY * paddedWidth + srcX) * channels + c] * kernel[ky * kernelSize + kx];
 			}
 		}
 
@@ -65,7 +66,7 @@ void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int h
 
 void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
 	int kernelRadius = kernelSize >> 1;
-	int kernelArea = kernelSize * kernelSize;
+	int paddedWidth = width + 2 * kernelRadius;
 
 	auto paddedSrc = padding2D(src, channels, width, height, kernelRadius, kernelRadius, kernelRadius, kernelRadius);
 
@@ -80,11 +81,11 @@ void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int he
 						int srcX = x + kx;
 						int srcY = y + ky;
 
-						sum += paddedSrc[(srcY * (width + 2 * kernelRadius) + srcX) * channels + c] * kernel[ky * kernelSize + kx];
+						sum += paddedSrc[(srcY * paddedWidth + srcX) * channels + c] * kernel[ky * kernelSize + kx];
 					}
 				}
 
-				dst[(y * width + x) * channels + c] = static_cast<uint8_t>(sum);
+				dst[(y * width + x) * channels + c] = sum;
 			}
 		}
 	}
