@@ -54,7 +54,7 @@ void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int h
 	checkCudaErrors(cudaMemcpy(d_pad, paddedSrc.data(), sizeof(uint8_t) * paddedSrc.size(), cudaMemcpyHostToDevice));
 
 	dim3 threadsPerBlock(16, 16);
-	dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
+	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
 	conv2DKernel<<<numBlocks, threadsPerBlock>>>(d_pad, d_dst, channels, width, height, d_kernel, kernelSize);
 
 	checkCudaErrors(cudaMemcpy(dst, d_dst, sizeof(uint8_t) * width * height * channels, cudaMemcpyDeviceToHost));
@@ -85,7 +85,7 @@ void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int he
 					}
 				}
 
-				dst[(y * width + x) * channels + c] = sum;
+				dst[(y * width + x) * channels + c] = (uint8_t)std::round(sum);
 			}
 		}
 	}

@@ -95,7 +95,7 @@ void morphCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int he
     checkCudaErrors(cudaMemcpy(d_pad, paddedSrc.data(), paddedSrc.size() * sizeof(uint8_t), cudaMemcpyHostToDevice));
 
     dim3 threadsPerBlock(32, 32);
-    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
     morphKernel<<<numBlocks, threadsPerBlock>>>(d_pad, d_dst, channels, width, height, d_kernel, kernelSize, op);
 
     checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * channels * sizeof(uint8_t), cudaMemcpyDeviceToHost));

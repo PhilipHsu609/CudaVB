@@ -23,4 +23,8 @@ std::vector<uint8_t> padding2D(
 	uint8_t value = 0
 );
 
+static inline int divUp(int total, int grain) {
+    return (total + grain - 1) / grain;
+}
+
 #endif // !UTILS_H

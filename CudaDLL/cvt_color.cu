@@ -2,6 +2,7 @@
 #include "device_launch_parameters.h"
 #include "my_cuda_lib.h"
 #include "helper_cuda.h"
+#include "utils.h"
 
 #include <iostream>
 #include <cstdint>
@@ -87,8 +88,8 @@ void rgb2hsvCuda(const uint8_t *src, uint8_t *dst, int width, int height) {
 
 	checkCudaErrors(cudaMemcpy(d_src, src, width * height * 3 * sizeof(uint8_t), cudaMemcpyHostToDevice));
 
-	dim3 threadsPerBlock(16, 16);
-	dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
+	dim3 threadsPerBlock(32, 32);
+	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
 	rgb2hsvKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, width, height);
 
 	checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * 3 * sizeof(uint8_t), cudaMemcpyDeviceToHost));
@@ -105,8 +106,8 @@ void rgb2grayCuda(const uint8_t *src, uint8_t *dst, int width, int height) {
 
 	checkCudaErrors(cudaMemcpy(d_src, src, width * height * 3 * sizeof(uint8_t), cudaMemcpyHostToDevice));
 
-	dim3 threadsPerBlock(16, 16);
-	dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
+	dim3 threadsPerBlock(32, 32);
+	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
 	rgb2grayKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, width, height);
 
 	checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * sizeof(uint8_t), cudaMemcpyDeviceToHost));
@@ -123,8 +124,8 @@ void binarizeCuda(const uint8_t *src, uint8_t *dst, int width, int height, uint8
 
 	checkCudaErrors(cudaMemcpy(d_src, src, width * height * sizeof(uint8_t), cudaMemcpyHostToDevice));
 
-	dim3 threadsPerBlock(16, 16);
-	dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
+	dim3 threadsPerBlock(32, 32);
+	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
 	binarizeKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, width, height, threshold);
 
 	checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * sizeof(uint8_t), cudaMemcpyDeviceToHost));
