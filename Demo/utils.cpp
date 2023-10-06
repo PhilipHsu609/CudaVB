@@ -1,6 +1,10 @@
 #define _USE_MATH_DEFINES
 
+#include "EasyBMP/EasyBMP.h"
 #include "utils.h"
+
+#include <vector>
+#include <cassert>
 #include <cmath>
 
 void rgb2bgr(std::vector<uint8_t> &image) {
@@ -34,4 +38,40 @@ std::vector<float> gaussianKernel(int kernelSize, float sigma) {
 
     return kernel;
 
+}
+
+std::vector<uint8_t> loadRAW(BMP &bmp) {
+    int width = bmp.TellWidth();
+    int height = bmp.TellHeight();
+    int channels = bmp.TellBitDepth() / 8;
+
+    std::vector<uint8_t> raw(width * height * channels);
+
+    for (int y = 0; y < height; y++) {
+        uint8_t *row = raw.data() + y * width * channels;
+        if (channels == 1) {
+            bmp.Write8bitRow(row, width * channels, y);
+        } else if (channels == 3) {
+            bmp.Write24bitRow(row, width * channels, y);
+        }
+    }
+
+    return raw;
+}
+
+void saveRAW(BMP &bmp, std::vector<uint8_t> &raw) {
+    int width = bmp.TellWidth();
+    int height = bmp.TellHeight();
+    int channels = bmp.TellBitDepth() / 8;
+
+    assert(raw.size() == width * height * channels && "Resize bmp before call this function.");
+
+    for (int y = 0; y < height; y++) {
+        uint8_t *row = raw.data() + y * width * channels;
+        if (channels == 1) {
+            bmp.Read8bitRow(row, width * channels, y);
+        } else if (channels == 3) {
+            bmp.Read24bitRow(row, width * channels, y);
+        }
+    }
 }

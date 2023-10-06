@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="EasyBMP">
+      <UniqueIdentifier>{cca543de-0148-46d9-b966-e94a4ba388fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -21,16 +24,16 @@
     <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bmp.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="EasyBMP\EasyBMP.cpp">
+      <Filter>EasyBMP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bmp.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="EasyBMP\EasyBMP.h">
+      <Filter>EasyBMP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
