@@ -24,6 +24,12 @@
     <CudaCompile Include="morph.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="scaling.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="memory.cpp">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h">

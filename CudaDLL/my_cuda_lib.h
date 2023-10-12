@@ -12,6 +12,11 @@
 */
 extern "C" DLL_EXPORT int deviceCount();
 
+extern "C" DLL_EXPORT bool cudaAlloc(void **gpuPtr, size_t size);
+extern "C" DLL_EXPORT bool cudaRelease(void **gpuPtr);
+extern "C" DLL_EXPORT bool toGPU(void *cpuPtr, void *gpuPtr, size_t size);
+extern "C" DLL_EXPORT bool toCPU(void *cpuPtr, void *gpuPtr, size_t size);
+
 /*
 	* Binarize image
 	* 
@@ -59,5 +64,14 @@ extern "C" DLL_EXPORT void dilateCuda(const uint8_t * src, uint8_t * dst, int ch
 */
 extern "C" DLL_EXPORT void erodeCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
 extern "C" DLL_EXPORT void erodeCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
+
+extern "C" DLL_EXPORT void pyrUpCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
+extern "C" DLL_EXPORT void pyrUpCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
+
+extern "C" DLL_EXPORT void pyrDownCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
+extern "C" DLL_EXPORT void pyrDownCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
+
+extern "C" DLL_EXPORT void bilinearCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height, int dstWidth, int dstHeight);
+extern "C" DLL_EXPORT void bilinearCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height, int dstWidth, int dstHeight);
 
 #endif // !MY_CUDA_LIB_H
