@@ -84,24 +84,15 @@ void erodeCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int hei
 
 void morphCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op) {
     int *d_kernel;
-    uint8_t *d_src, *d_dst;
 
     checkCudaErrors(cudaMalloc(&d_kernel, kernelSize * kernelSize * sizeof(int)));
-    checkCudaErrors(cudaMalloc(&d_dst, width * height * channels * sizeof(uint8_t)));
-    checkCudaErrors(cudaMalloc(&d_src, width * height * channels * sizeof(uint8_t)));
-
     checkCudaErrors(cudaMemcpy(d_kernel, kernel, kernelSize * kernelSize * sizeof(int), cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(d_src, src, width * height * channels * sizeof(uint8_t), cudaMemcpyHostToDevice));
 
-    dim3 threadsPerBlock(32, 32);
+    dim3 threadsPerBlock(16, 16);
     dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-    morphKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, channels, width, height, d_kernel, kernelSize, op);
-
-    checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * channels * sizeof(uint8_t), cudaMemcpyDeviceToHost));
+    morphKernel<<<numBlocks, threadsPerBlock>>>(src, dst, channels, width, height, d_kernel, kernelSize, op);
 
     checkCudaErrors(cudaFree(d_kernel));
-    checkCudaErrors(cudaFree(d_dst));
-    checkCudaErrors(cudaFree(d_src));
 }
 
 void morphCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op) {

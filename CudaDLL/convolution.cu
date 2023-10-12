@@ -43,24 +43,14 @@ __global__ void conv2DKernel(const uint8_t *src, uint8_t *dst, int channels, int
 
 void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
 	float *d_kernel;
-	uint8_t *d_src, *d_dst;
-
 	checkCudaErrors(cudaMalloc(&d_kernel, sizeof(float) * kernelSize * kernelSize));
-	checkCudaErrors(cudaMalloc(&d_dst, sizeof(uint8_t) * width * height * channels));
-	checkCudaErrors(cudaMalloc(&d_src, sizeof(uint8_t) * width * height * channels));
-
 	checkCudaErrors(cudaMemcpy(d_kernel, kernel, sizeof(float) * kernelSize * kernelSize, cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMemcpy(d_src, src, sizeof(uint8_t) * width * height * channels, cudaMemcpyHostToDevice));
 
 	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	conv2DKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, channels, width, height, d_kernel, kernelSize);
-
-	checkCudaErrors(cudaMemcpy(dst, d_dst, sizeof(uint8_t) * width * height * channels, cudaMemcpyDeviceToHost));
+	conv2DKernel<<<numBlocks, threadsPerBlock>>>(src, dst, channels, width, height, d_kernel, kernelSize);
 
 	checkCudaErrors(cudaFree(d_kernel));
-	checkCudaErrors(cudaFree(d_src));
-	checkCudaErrors(cudaFree(d_dst));
 }
 
 void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {

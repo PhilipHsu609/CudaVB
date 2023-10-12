@@ -81,57 +81,21 @@ __global__ void binarizeKernel(const uint8_t *src, uint8_t *dst, int width, int 
 }
 
 void rgb2hsvCuda(const uint8_t *src, uint8_t *dst, int width, int height) {
-	uint8_t *d_src, *d_dst;
-
-	checkCudaErrors(cudaMalloc(&d_src, width * height * 3 * sizeof(uint8_t)));
-	checkCudaErrors(cudaMalloc(&d_dst, width * height * 3 * sizeof(uint8_t)));
-
-	checkCudaErrors(cudaMemcpy(d_src, src, width * height * 3 * sizeof(uint8_t), cudaMemcpyHostToDevice));
-
-	dim3 threadsPerBlock(32, 32);
+	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	rgb2hsvKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, width, height);
-
-	checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * 3 * sizeof(uint8_t), cudaMemcpyDeviceToHost));
-
-	checkCudaErrors(cudaFree(d_src));
-	checkCudaErrors(cudaFree(d_dst));
+	rgb2hsvKernel<<<numBlocks, threadsPerBlock>>>(src, dst, width, height);
 }
 
 void rgb2grayCuda(const uint8_t *src, uint8_t *dst, int width, int height) {
-	uint8_t *d_src, *d_dst;
-
-	checkCudaErrors(cudaMalloc(&d_src, width * height * 3 * sizeof(uint8_t)));
-	checkCudaErrors(cudaMalloc(&d_dst, width * height * sizeof(uint8_t)));
-
-	checkCudaErrors(cudaMemcpy(d_src, src, width * height * 3 * sizeof(uint8_t), cudaMemcpyHostToDevice));
-
-	dim3 threadsPerBlock(32, 32);
+	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	rgb2grayKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, width, height);
-
-	checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * sizeof(uint8_t), cudaMemcpyDeviceToHost));
-
-	checkCudaErrors(cudaFree(d_src));
-	checkCudaErrors(cudaFree(d_dst));
+	rgb2grayKernel<<<numBlocks, threadsPerBlock>>>(src, dst, width, height);
 }
 
 void binarizeCuda(const uint8_t *src, uint8_t *dst, int width, int height, uint8_t threshold) {
-	uint8_t *d_src, *d_dst;
-
-	checkCudaErrors(cudaMalloc(&d_src, width * height * sizeof(uint8_t)));
-	checkCudaErrors(cudaMalloc(&d_dst, width * height * sizeof(uint8_t)));
-
-	checkCudaErrors(cudaMemcpy(d_src, src, width * height * sizeof(uint8_t), cudaMemcpyHostToDevice));
-
-	dim3 threadsPerBlock(32, 32);
+	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	binarizeKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, width, height, threshold);
-
-	checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * sizeof(uint8_t), cudaMemcpyDeviceToHost));
-
-	checkCudaErrors(cudaFree(d_src));
-	checkCudaErrors(cudaFree(d_dst));
+	binarizeKernel<<<numBlocks, threadsPerBlock>>>(src, dst, width, height, threshold);
 }
 
 void rgb2hsvCpu(const uint8_t *src, uint8_t *dst, int width, int height) {
