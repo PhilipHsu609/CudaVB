@@ -35,8 +35,7 @@ __host__ __device__ uint8_t erodeOp(uint8_t p1, uint8_t p2) {
 }
 
 __global__ void morphKernel(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op) {
-    int kernelRadius = kernelSize / 2;
-    int paddedWidth = width + 2 * kernelRadius;
+    int kernelRadius = kernelSize >> 1;
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -44,15 +43,18 @@ __global__ void morphKernel(const uint8_t *src, uint8_t *dst, int channels, int 
         return;
 
     for(int c = 0; c < channels; c++) {
-        uint8_t p = src[((y + kernelRadius) * paddedWidth + x + kernelRadius) * channels + c];
+        uint8_t p = src[(y * width + x) * channels + c];
 
         for(int ky = 0; ky < kernelSize; ky++) {
             for(int kx = 0; kx < kernelSize; kx++) {
-                int srcX = x + kx;
-                int srcY = y + ky;
+                int srcX = x + kx - kernelRadius;
+                int srcY = y + ky - kernelRadius;
+
+                if(srcX < 0 || srcX >= width || srcY < 0 || srcY >= height)
+                    continue;
 
                 if(kernel[ky * kernelSize + kx])
-                    p = op(p, src[(srcY * paddedWidth + srcX) * channels + c]);
+                    p = op(p, src[(srcY * width + srcX) * channels + c]);
             }
         }
 
@@ -82,48 +84,45 @@ void erodeCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int hei
 
 void morphCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op) {
     int *d_kernel;
-    uint8_t *d_pad, *d_dst;
-    int kernelRadius = kernelSize >> 1;
-
-    auto paddedSrc{ padding2D(src, channels, width, height, kernelRadius, kernelRadius, kernelRadius, kernelRadius, 0, 0xff) };
+    uint8_t *d_src, *d_dst;
 
     checkCudaErrors(cudaMalloc(&d_kernel, kernelSize * kernelSize * sizeof(int)));
     checkCudaErrors(cudaMalloc(&d_dst, width * height * channels * sizeof(uint8_t)));
-    checkCudaErrors(cudaMalloc(&d_pad, paddedSrc.size() * sizeof(uint8_t)));
+    checkCudaErrors(cudaMalloc(&d_src, width * height * channels * sizeof(uint8_t)));
 
     checkCudaErrors(cudaMemcpy(d_kernel, kernel, kernelSize * kernelSize * sizeof(int), cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(d_pad, paddedSrc.data(), paddedSrc.size() * sizeof(uint8_t), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(d_src, src, width * height * channels * sizeof(uint8_t), cudaMemcpyHostToDevice));
 
     dim3 threadsPerBlock(32, 32);
     dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-    morphKernel<<<numBlocks, threadsPerBlock>>>(d_pad, d_dst, channels, width, height, d_kernel, kernelSize, op);
+    morphKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, channels, width, height, d_kernel, kernelSize, op);
 
     checkCudaErrors(cudaMemcpy(dst, d_dst, width * height * channels * sizeof(uint8_t), cudaMemcpyDeviceToHost));
 
     checkCudaErrors(cudaFree(d_kernel));
     checkCudaErrors(cudaFree(d_dst));
-    checkCudaErrors(cudaFree(d_pad));
+    checkCudaErrors(cudaFree(d_src));
 }
 
 void morphCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op) {
-    int kernelRadius = kernelSize / 2;
+    int kernelRadius = kernelSize >> 1;
 
-    auto paddedSrc{ padding2D(src, channels, width, height, kernelRadius, kernelRadius, kernelRadius, kernelRadius, 0, 0xff) };
-
-	int paddedWidth = width + 2 * kernelRadius;
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 
 			for (int c = 0; c < channels; c++) {
-				uint8_t p = paddedSrc[((y + kernelRadius) * paddedWidth + x + kernelRadius) * channels + c];
+				uint8_t p = src[(y * width + x) * channels + c];
 
 				for (int ky = 0; ky < kernelSize; ky++) {
 					for (int kx = 0; kx < kernelSize; kx++) {
-						int srcX = x + kx;
-						int srcY = y + ky;
+						int srcX = x + kx - kernelRadius;
+						int srcY = y + ky - kernelRadius;
+
+                        if(srcX < 0 || srcX >= width || srcY < 0 || srcY >= height)
+                            continue;
 
 						if(kernel[ky * kernelSize + kx])
-							p = op(p, paddedSrc[(srcY * paddedWidth + srcX) * channels + c]);
+							p = op(p, src[(srcY * width + srcX) * channels + c]);
 					}
 				}
 

@@ -12,11 +12,10 @@
 extern "C" void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 extern "C" void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 
-__global__ void conv2DKernel(const uint8_t *paddedSrc, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
+__global__ void conv2DKernel(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 
-__global__ void conv2DKernel(const uint8_t *paddedSrc, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
+__global__ void conv2DKernel(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
 	int kernelRadius = kernelSize >> 1;
-	int paddedWidth = width + 2 * kernelRadius;
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
 
@@ -28,10 +27,13 @@ __global__ void conv2DKernel(const uint8_t *paddedSrc, uint8_t *dst, int channel
 
 		for (int ky = 0; ky < kernelSize; ky++) {
 			for (int kx = 0; kx < kernelSize; kx++) {
-				int srcX = x + kx;
-				int srcY = y + ky;
+				int srcX = x + kx - kernelRadius;
+				int srcY = y + ky - kernelRadius;
 
-				sum += paddedSrc[(srcY * paddedWidth + srcX) * channels + c] * kernel[ky * kernelSize + kx];
+				if(srcX < 0 || srcX >= width || srcY < 0 || srcY >= height)
+                    continue;
+
+				sum += src[(srcY * width + srcX) * channels + c] * kernel[ky * kernelSize + kx];
 			}
 		}
 
@@ -41,34 +43,28 @@ __global__ void conv2DKernel(const uint8_t *paddedSrc, uint8_t *dst, int channel
 
 void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
 	float *d_kernel;
-	uint8_t *d_pad, *d_dst;
-	int kernelRadius = kernelSize >> 1;
-
-	auto paddedSrc{ padding2D(src, channels, width, height, kernelRadius, kernelRadius, kernelRadius, kernelRadius) };
+	uint8_t *d_src, *d_dst;
 
 	checkCudaErrors(cudaMalloc(&d_kernel, sizeof(float) * kernelSize * kernelSize));
 	checkCudaErrors(cudaMalloc(&d_dst, sizeof(uint8_t) * width * height * channels));
-	checkCudaErrors(cudaMalloc(&d_pad, sizeof(uint8_t) * paddedSrc.size()));
+	checkCudaErrors(cudaMalloc(&d_src, sizeof(uint8_t) * width * height * channels));
 
 	checkCudaErrors(cudaMemcpy(d_kernel, kernel, sizeof(float) * kernelSize * kernelSize, cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMemcpy(d_pad, paddedSrc.data(), sizeof(uint8_t) * paddedSrc.size(), cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_src, src, sizeof(uint8_t) * width * height * channels, cudaMemcpyHostToDevice));
 
 	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	conv2DKernel<<<numBlocks, threadsPerBlock>>>(d_pad, d_dst, channels, width, height, d_kernel, kernelSize);
+	conv2DKernel<<<numBlocks, threadsPerBlock>>>(d_src, d_dst, channels, width, height, d_kernel, kernelSize);
 
 	checkCudaErrors(cudaMemcpy(dst, d_dst, sizeof(uint8_t) * width * height * channels, cudaMemcpyDeviceToHost));
 
 	checkCudaErrors(cudaFree(d_kernel));
-	checkCudaErrors(cudaFree(d_pad));
+	checkCudaErrors(cudaFree(d_src));
 	checkCudaErrors(cudaFree(d_dst));
 }
 
 void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
 	int kernelRadius = kernelSize >> 1;
-	int paddedWidth = width + 2 * kernelRadius;
-
-	auto paddedSrc = padding2D(src, channels, width, height, kernelRadius, kernelRadius, kernelRadius, kernelRadius);
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
@@ -78,10 +74,13 @@ void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int he
 
 				for (int ky = 0; ky < kernelSize; ky++) {
 					for (int kx = 0; kx < kernelSize; kx++) {
-						int srcX = x + kx;
-						int srcY = y + ky;
+						int srcX = x + kx - kernelRadius;
+						int srcY = y + ky - kernelRadius;
 
-						sum += paddedSrc[(srcY * paddedWidth + srcX) * channels + c] * kernel[ky * kernelSize + kx];
+						if(srcX < 0 || srcX >= width || srcY < 0 || srcY >= height)
+                            continue;
+
+						sum += src[(srcY * width + srcX) * channels + c] * kernel[ky * kernelSize + kx];
 					}
 				}
 
