@@ -30,6 +30,9 @@
     <CudaCompile Include="memory.cpp">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="hist_eq.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h">

@@ -82,6 +82,7 @@
   <ItemGroup>
     <CudaCompile Include="convolution.cu" />
     <CudaCompile Include="cvt_color.cu" />
+    <CudaCompile Include="hist_eq.cu" />
     <CudaCompile Include="memory.cpp" />
     <CudaCompile Include="morph.cu" />
     <CudaCompile Include="scaling.cu" />
