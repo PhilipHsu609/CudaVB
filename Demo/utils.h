@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "EasyBMP/EasyBMP.h"
-
 #include <iostream>
 #include <iterator>
 #include <algorithm>
@@ -40,8 +38,5 @@ void rgb2bgr(std::vector<uint8_t> &image);
 void bgr2rgb(std::vector<uint8_t> &image);
 
 std::vector<float> gaussianKernel(int kernelSize, float sigma);
-
-std::vector<uint8_t> loadRAW(BMP &bmp);
-void saveRAW(BMP &bmp, std::vector<uint8_t> &data);
 
 #endif // !UTILS_H
