@@ -1,10 +1,13 @@
+#ifndef __CUDACC__
+#define __CUDACC__
+#endif
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "my_cuda_lib.h"
 #include "helper_cuda.h"
 #include "utils.h"
 
-#include <iostream>
 #include <cstdint>
 #include <cmath>
 
@@ -76,7 +79,7 @@ __global__ void binarizeKernel(const uint8_t *src, uint8_t *dst, int width, int 
 
 	if (x < width && y < height) {
 		int i = y * width + x;
-		dst[i] = src[i] >= threshold ? 0xFF : 0x00;
+		dst[i] = src[i] > threshold ? 0xFF : 0x00;
 	}
 }
 
@@ -114,17 +117,17 @@ void rgb2hsvCpu(const uint8_t *src, uint8_t *dst, int width, int height) {
 		s = (v == 0) ? 0 : delta / v;
 
 		if (v == r) {
-			h = 60 * (g - b) / delta;
+			h = 60.0f * (g - b) / delta;
 		} else if (v == g) {
-			h = 120 + 60 * (b - r) / delta;
+			h = 120.0f + 60.0f * (b - r) / delta;
 		} else if (v == b) {
-			h = 240 + 60 * (r - g) / delta;
+			h = 240.0f + 60.0f * (r - g) / delta;
 		} else {
-			h = 0;
+			h = 0.0f;
 		}
 
-		if (h < 0) {
-			h += 360;
+		if (h < 0.0f) {
+			h += 360.0f;
 		}
 
 		dst[3 * i] = (uint8_t)std::round(h / 2.0f);
@@ -141,6 +144,6 @@ void rgb2grayCpu(const uint8_t *src, uint8_t *dst, int width, int height) {
 
 void binarizeCpu(const uint8_t *src, uint8_t *dst, int width, int height, uint8_t threshold) {
 	for (int i = 0; i < width * height; i++) {
-		dst[i] = src[i] >= threshold ? 0xFF : 0x00;
+		dst[i] = src[i] > threshold ? 0xFF : 0x00;
 	}
 }

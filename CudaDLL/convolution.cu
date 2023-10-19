@@ -1,13 +1,15 @@
+#ifndef __CUDACC__
+#define __CUDACC__
+#endif
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "my_cuda_lib.h"
 #include "helper_cuda.h"
 #include "utils.h"
 
-#include <iostream>
 #include <cstdint>
 #include <cmath>
-#include <vector>
 
 extern "C" void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 extern "C" void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);

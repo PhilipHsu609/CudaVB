@@ -31,7 +31,7 @@ bool toGPU(void *cpuPtr, void *gpuPtr, size_t size) {
     return true;
 }
 
-bool toCPU(void *cpuPtr, void *gpuPtr, size_t size) {
+bool toCPU(void *gpuPtr, void *cpuPtr, size_t size) {
     if(gpuPtr == nullptr || cpuPtr == nullptr) {
         return false;
     }

@@ -1,13 +1,7 @@
 #ifndef MY_CUDA_LIB_H
 #define MY_CUDA_LIB_H
 
-#pragma once
-
 #define DLL_EXPORT __declspec(dllexport)
-
-#ifndef __CUDACC__
-#define __CUDACC__
-#endif
 
 #include <cstdint>
 
@@ -22,7 +16,7 @@ extern "C" DLL_EXPORT int deviceCount();
 extern "C" DLL_EXPORT bool cudaAlloc(void **gpuPtr, size_t size);
 extern "C" DLL_EXPORT bool cudaRelease(void **gpuPtr);
 extern "C" DLL_EXPORT bool toGPU(void *cpuPtr, void *gpuPtr, size_t size);
-extern "C" DLL_EXPORT bool toCPU(void *cpuPtr, void *gpuPtr, size_t size);
+extern "C" DLL_EXPORT bool toCPU(void *gpuPtr, void *cpuPtr, size_t size);
 
 /*
 	* Binarize image
@@ -92,7 +86,7 @@ extern "C" DLL_EXPORT void bilinearCuda(const uint8_t * src, uint8_t * dst, int 
 /*
 	* Histogram equalization
 */
-extern "C" DLL_EXPORT void equalizeHistCPU(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
+extern "C" DLL_EXPORT void equalizeHistCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
 extern "C" DLL_EXPORT void equalizeHistCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
 
 #endif // !MY_CUDA_LIB_H

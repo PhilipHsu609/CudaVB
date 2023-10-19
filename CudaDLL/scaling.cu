@@ -1,3 +1,7 @@
+#ifndef __CUDACC__
+#define __CUDACC__
+#endif
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "my_cuda_lib.h"
@@ -280,6 +284,8 @@ void bilinearCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int
 }
 
 void bilinearCudaTexture(const uint8_t *src, uint8_t *dst, int channels, int width, int height, int dstWidth, int dstHeight) {
+	// TODO: Needs to convert src to uchar4 first
+
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(8, 0, 0, 0, cudaChannelFormatKindUnsigned);
 	cudaArray_t cuArray;
 	checkCudaErrors(cudaMallocArray(&cuArray, &channelDesc, width * channels, height));

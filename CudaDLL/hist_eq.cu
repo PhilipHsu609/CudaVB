@@ -1,3 +1,7 @@
+#ifndef __CUDACC__
+#define __CUDACC__
+#endif
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "helper_cuda.h"
@@ -7,13 +11,12 @@
 
 #include <cmath>
 #include <vector>
-#include <iostream>
 
 #define HISTOGRAM_SIZE 256
 
 namespace cg = cooperative_groups;
 
-extern "C" void equalizeHistCPU(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
+extern "C" void equalizeHistCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
 extern "C" void equalizeHistCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
 
 __global__ void calculateHist(const uint8_t *src, int *hist, int channels, int width, int height);
@@ -135,7 +138,7 @@ void equalizeHistCPU(const uint8_t *src, uint8_t *dst, int channels, int width, 
 	}
 }
 
-void equalizeHistCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height) {
+void equalizeHistCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height) {
 	// Reference:
 	//     https://github.com/nuwandda/cuda-histogram-equalization/blob/main/kernel.cu
 
@@ -147,11 +150,11 @@ void equalizeHistCuda(const uint8_t *src, uint8_t *dst, int channels, int width,
 
 	dim3 threadsPerBlock(HISTOGRAM_SIZE * 4);
 	dim3 numBlocks(divUp(width * height, threadsPerBlock.x));
-	calculateHist<<<numBlocks, threadsPerBlock, size>>>(src, devHist, channels, width, height);
+	calculateHist<<<numBlocks, threadsPerBlock, size>>>(devSrc, devHist, channels, width, height);
 
 	calculateHistSum<<<1, HISTOGRAM_SIZE, size>>>(devHist, devHistSum, channels);
 
-	equalizeHist<<<numBlocks, threadsPerBlock, size>>>(src, dst, devHistSum, channels, width, height);
+	equalizeHist<<<numBlocks, threadsPerBlock, size>>>(devSrc, devDst, devHistSum, channels, width, height);
 
 	cudaFree(devHist);
 	cudaFree(devHistSum);
