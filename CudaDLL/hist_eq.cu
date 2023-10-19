@@ -19,9 +19,14 @@ namespace cg = cooperative_groups;
 extern "C" void equalizeHistCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
 extern "C" void equalizeHistCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
 
+extern "C" uint8_t getThreshVal_OtsuCpu(const uint8_t *src, int width, int height);
+extern "C" uint8_t getThreshVal_OtsuCuda(const uint8_t *src, int width, int height);
+
 __global__ void calculateHist(const uint8_t *src, int *hist, int channels, int width, int height);
 __global__ void calculateHistSum(const int *hist, int *histSum, int channels);
 __global__ void equalizeHist(const uint8_t *src, uint8_t *dst, const int *histSum, int channels, int width, int height);
+
+int calculateOtsu(const int *hist, int width, int height);
 
 __global__ void calculateHist(const uint8_t *src, int *hist, int channels, int width, int height) {	
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -104,7 +109,7 @@ __global__ void equalizeHist(const uint8_t *src, uint8_t *dst, const int *histSu
 	}
 }
 
-void equalizeHistCPU(const uint8_t *src, uint8_t *dst, int channels, int width, int height) {
+void equalizeHistCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height) {
 	std::vector<int> hist(HISTOGRAM_SIZE * channels, 0);
 	std::vector<int> histSum(HISTOGRAM_SIZE * channels, 0);
 
@@ -142,7 +147,7 @@ void equalizeHistCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int 
 	// Reference:
 	//     https://github.com/nuwandda/cuda-histogram-equalization/blob/main/kernel.cu
 
-	int *devHist, *devHistSum{};
+	int *devHist, *devHistSum;
 	int size = HISTOGRAM_SIZE * channels * sizeof(int);
 
 	checkCudaErrors(cudaMalloc(&devHist, size));
@@ -158,4 +163,77 @@ void equalizeHistCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int 
 
 	cudaFree(devHist);
 	cudaFree(devHistSum);
+}
+
+int calculateOtsu(const int *hist, int width, int height) {
+	double mu = 0.0, scale = 1.0 / double(width * height);
+	for (int i = 0; i < HISTOGRAM_SIZE; i++) {
+		mu += i * double(hist[i]);
+	}
+
+	mu *= scale;
+	double mu1 = 0.0, q1 = 0.0;
+	double max_sigma = 0.0;
+	uint8_t max_val = 0;
+
+	for (int i = 0; i < HISTOGRAM_SIZE; i++) {
+		double p_i, q2, mu2, sigma;
+
+		p_i = hist[i] * scale;  // the probability of intensity i
+		mu1 *= q1;              // the mean (expected value) of class 1
+		q1 += p_i;              // the probability of class 1 (i <= threshold)
+		q2 = 1.0 - q1;          // the probability of class 2 (i > threshold)
+
+		if (std::min(q1, q2) < 1e-7 || std::max(q1, q2) > 1.0 - 1e-7) {
+			continue;
+		}
+
+		mu1 = (mu1 + i * p_i) / q1;
+		mu2 = (mu - q1 * mu1) / q2;
+
+		/*
+			argmax_{i} \sigma^{2}(i) = q_{1}(i) q_{2}(i) [ \mu_{1}(i) - \mu_{2}(i) ]^{2}
+		*/
+		sigma = q1 * q2 * (mu1 - mu2) * (mu1 - mu2);
+
+		if (sigma > max_sigma) {
+			max_sigma = sigma;
+			max_val = uint8_t(i);
+		}
+	}
+
+	return max_val;
+}
+
+uint8_t getThreshVal_OtsuCpu(const uint8_t *src, int width, int height) {
+	// Reference:
+	//     https://github.com/opencv/opencv/blob/0052d46b8e33c7bfe0e1450e4bff28b88f455570/modules/imgproc/src/thresh.cpp#L1127
+
+	std::vector<int> hist(HISTOGRAM_SIZE, 0);
+
+	for (int y = 0; y < height; y++) {
+		const uint8_t *srcRow = src + y * width;
+		for (int x = 0; x < width; x++) {
+			hist[srcRow[x]]++;
+		}
+	}
+
+	return calculateOtsu(hist.data(), width, height);
+}
+
+uint8_t getThreshVal_OtsuCuda(const uint8_t *devSrc, int width, int height) {
+	int *devHist;
+	std::vector<int> hist(HISTOGRAM_SIZE, 0);
+	size_t size = HISTOGRAM_SIZE * sizeof(int);
+
+	checkCudaErrors(cudaMalloc(&devHist, size));
+
+	dim3 threadsPerBlock(HISTOGRAM_SIZE);
+	dim3 numBlocks(divUp(width * height, threadsPerBlock.x));
+	calculateHist<<<numBlocks, threadsPerBlock, size>>>(devSrc, devHist, 1, width, height);
+
+	checkCudaErrors(cudaMemcpy(hist.data(), devHist, size, cudaMemcpyDeviceToHost));
+	cudaFree(devHist);
+
+	return calculateOtsu(hist.data(), width, height);
 }

@@ -28,6 +28,14 @@ extern "C" DLL_EXPORT void binarizeCpu(const uint8_t *src, uint8_t *dst, int wid
 extern "C" DLL_EXPORT void binarizeCuda(const uint8_t *src, uint8_t *dst, int width, int height, uint8_t threshold);
 
 /*
+	* Get threshold value using Otsu's method
+	* 
+	* Note: src is a gray scale image
+*/
+extern "C" DLL_EXPORT uint8_t getThreshVal_OtsuCpu(const uint8_t * src, int width, int height);
+extern "C" DLL_EXPORT uint8_t getThreshVal_OtsuCuda(const uint8_t * src, int width, int height);
+
+/*
 	* Convert RGB to Gray
 */
 extern "C" DLL_EXPORT void rgb2grayCpu(const uint8_t *src, uint8_t *dst, int width, int height);
