@@ -80,6 +80,7 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="ccl.cu" />
     <CudaCompile Include="convolution.cu" />
     <CudaCompile Include="cvt_color.cu" />
     <CudaCompile Include="hist_eq.cu" />

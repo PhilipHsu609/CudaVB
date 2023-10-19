@@ -5,6 +5,7 @@
 #include <vector>
 #include <cassert>
 #include <cmath>
+#include <unordered_map>
 
 void rgb2bgr(std::vector<uint8_t> &image) {
 	for (size_t i = 0; i < image.size(); i += 3) {
@@ -37,4 +38,21 @@ std::vector<float> gaussianKernel(int kernelSize, float sigma) {
 
     return kernel;
 
+}
+
+int flattenL(int *label, int size) {
+    // Flatten labels to [0, nLabels)
+    int k = 1;
+    std::unordered_map<int, int> labelMap;
+    labelMap[0] = 0;
+    for (int i = 0; i < size; i++) {
+        if(labelMap.find(label[i]) == labelMap.end()) {
+			labelMap[label[i]] = k;
+            label[i] = k;
+            k++;
+        } else {
+            label[i] = labelMap[label[i]];
+        }
+    }
+    return k;
 }

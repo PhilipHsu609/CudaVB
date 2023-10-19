@@ -39,4 +39,6 @@ void bgr2rgb(std::vector<uint8_t> &image);
 
 std::vector<float> gaussianKernel(int kernelSize, float sigma);
 
+int flattenL(int *label, int size);
+
 #endif // !UTILS_H

@@ -97,4 +97,7 @@ extern "C" DLL_EXPORT void bilinearCuda(const uint8_t * src, uint8_t * dst, int 
 extern "C" DLL_EXPORT void equalizeHistCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
 extern "C" DLL_EXPORT void equalizeHistCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height);
 
+extern "C" DLL_EXPORT void connectedComponentsCpu(const uint8_t * src, int *label, int width, int height);
+extern "C" DLL_EXPORT void connectedComponentsCuda(const uint8_t * devSrc, int *devLabel, int width, int height);
+
 #endif // !MY_CUDA_LIB_H
