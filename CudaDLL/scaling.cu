@@ -13,13 +13,13 @@
 #include <stdexcept>
 
 extern "C" void pyrUpCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
-//extern "C" void pyrUpCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
+//extern "C" void pyrUpCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
 
 extern "C" void pyrDownCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
-//extern "C" void pyrDownCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
+//extern "C" void pyrDownCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
 
 extern "C" void bilinearCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, int dstWidth, int dstHeight);
-extern "C" void bilinearCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height, int dstWidth, int dstHeight);
+extern "C" void bilinearCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, int dstWidth, int dstHeight);
 
 __global__ void bilinearKernel(cudaTextureObject_t texObj, uint8_t *dst, int channels, int width, int height, int dstWidth, int dstHeight);
 __global__ void bilinearKernel(const uint8_t *src, uint8_t *dst, int channels, int width, int height, int dstWidth, int dstHeight);
@@ -277,10 +277,10 @@ void bilinearCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int 
 	}
 }
 
-void bilinearCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, int dstWidth, int dstHeight) {
+void bilinearCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, int dstWidth, int dstHeight) {
 	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(dstWidth, threadsPerBlock.x), divUp(dstHeight, threadsPerBlock.y));
-	bilinearKernel<<<numBlocks, threadsPerBlock>>>(src, dst, channels, width, height, dstWidth, dstHeight);
+	bilinearKernel<<<numBlocks, threadsPerBlock>>>(devSrc, devDst, channels, width, height, dstWidth, dstHeight);
 }
 
 void bilinearCudaTexture(const uint8_t *src, uint8_t *dst, int channels, int width, int height, int dstWidth, int dstHeight) {

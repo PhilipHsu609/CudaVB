@@ -9,13 +9,13 @@
 using morphOp = uint8_t(*)(uint8_t, uint8_t);
 
 extern "C" void dilateCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize);
-extern "C" void dilateCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
+extern "C" void dilateCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, const int *kernel, int kernelSize);
 
-extern "C" void erodeCpu(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
-extern "C" void erodeCuda(const uint8_t * src, uint8_t * dst, int channels, int width, int height, const int *kernel, int kernelSize);
+extern "C" void erodeCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize);
+extern "C" void erodeCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, const int *kernel, int kernelSize);
 
 void morphCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op);
-void morphCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op);
+void morphCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op);
 
 __host__ __device__ uint8_t dilateOp(uint8_t p1, uint8_t p2);
 __host__ __device__ uint8_t erodeOp(uint8_t p1, uint8_t p2);
@@ -62,16 +62,16 @@ __global__ void morphKernel(const uint8_t *src, uint8_t *dst, int channels, int 
     }
 }
 
-void dilateCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize) {
+void dilateCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, const int *kernel, int kernelSize) {
     morphOp h_dilateOp;
     checkCudaErrors(cudaMemcpyFromSymbol(&h_dilateOp, d_dilateOp, sizeof(morphOp)));
-    morphCuda(src, dst, channels, width, height, kernel, kernelSize, h_dilateOp);
+    morphCuda(devSrc, devDst, channels, width, height, kernel, kernelSize, h_dilateOp);
 }
 
-void erodeCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize) {
+void erodeCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, const int *kernel, int kernelSize) {
     morphOp h_erodeOp;
     checkCudaErrors(cudaMemcpyFromSymbol(&h_erodeOp, d_erodeOp, sizeof(morphOp)));
-    morphCuda(src, dst, channels, width, height, kernel, kernelSize, h_erodeOp);
+    morphCuda(devSrc, devDst, channels, width, height, kernel, kernelSize, h_erodeOp);
 }
 
 void dilateCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize) {
@@ -82,17 +82,17 @@ void erodeCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int hei
     morphCpu(src, dst, channels, width, height, kernel, kernelSize, erodeOp);
 }
 
-void morphCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op) {
-    int *d_kernel;
+void morphCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op) {
+    int *devKernel;
 
-    checkCudaErrors(cudaMalloc(&d_kernel, kernelSize * kernelSize * sizeof(int)));
-    checkCudaErrors(cudaMemcpy(d_kernel, kernel, kernelSize * kernelSize * sizeof(int), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMalloc(&devKernel, kernelSize * kernelSize * sizeof(int)));
+    checkCudaErrors(cudaMemcpy(devKernel, kernel, kernelSize * kernelSize * sizeof(int), cudaMemcpyHostToDevice));
 
     dim3 threadsPerBlock(16, 16);
     dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-    morphKernel<<<numBlocks, threadsPerBlock>>>(src, dst, channels, width, height, d_kernel, kernelSize, op);
+    morphKernel<<<numBlocks, threadsPerBlock>>>(devSrc, devDst, channels, width, height, devKernel, kernelSize, op);
 
-    checkCudaErrors(cudaFree(d_kernel));
+    checkCudaErrors(cudaFree(devKernel));
 }
 
 void morphCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const int *kernel, int kernelSize, morphOp op) {

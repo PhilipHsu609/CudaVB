@@ -17,10 +17,10 @@
 namespace cg = cooperative_groups;
 
 extern "C" void equalizeHistCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
-extern "C" void equalizeHistCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
+extern "C" void equalizeHistCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
 
 extern "C" uint8_t getThreshVal_OtsuCpu(const uint8_t *src, int width, int height);
-extern "C" uint8_t getThreshVal_OtsuCuda(const uint8_t *src, int width, int height);
+extern "C" uint8_t getThreshVal_OtsuCuda(const uint8_t *devSrc, int width, int height);
 
 __global__ void calculateHist(const uint8_t *src, int *hist, int channels, int width, int height);
 __global__ void calculateHistSum(const int *hist, int *histSum, int channels);

@@ -12,7 +12,7 @@
 #include <cmath>
 
 extern "C" void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
-extern "C" void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
+extern "C" void conv2DCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, const float *kernel, int kernelSize);
 
 __global__ void conv2DKernel(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize);
 
@@ -43,16 +43,16 @@ __global__ void conv2DKernel(const uint8_t *src, uint8_t *dst, int channels, int
 	}
 }
 
-void conv2DCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {
-	float *d_kernel;
-	checkCudaErrors(cudaMalloc(&d_kernel, sizeof(float) * kernelSize * kernelSize));
-	checkCudaErrors(cudaMemcpy(d_kernel, kernel, sizeof(float) * kernelSize * kernelSize, cudaMemcpyHostToDevice));
+void conv2DCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, const float *kernel, int kernelSize) {
+	float *devKernel;
+	checkCudaErrors(cudaMalloc(&devKernel, sizeof(float) * kernelSize * kernelSize));
+	checkCudaErrors(cudaMemcpy(devKernel, kernel, sizeof(float) * kernelSize * kernelSize, cudaMemcpyHostToDevice));
 
 	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	conv2DKernel<<<numBlocks, threadsPerBlock>>>(src, dst, channels, width, height, d_kernel, kernelSize);
+	conv2DKernel<<<numBlocks, threadsPerBlock>>>(devSrc, devDst, channels, width, height, devKernel, kernelSize);
 
-	checkCudaErrors(cudaFree(d_kernel));
+	checkCudaErrors(cudaFree(devKernel));
 }
 
 void conv2DCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, const float *kernel, int kernelSize) {

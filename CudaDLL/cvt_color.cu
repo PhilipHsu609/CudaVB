@@ -12,13 +12,13 @@
 #include <cmath>
 
 extern "C" void rgb2hsvCpu(const uint8_t *src, uint8_t *dst, int width, int height);
-extern "C" void rgb2grayCpu(const uint8_t *src, uint8_t *dst, int width, int height);
+extern "C" void rgb2hsvCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height);
 
-extern "C" void rgb2hsvCuda(const uint8_t *src, uint8_t *dst, int width, int height);
-extern "C" void rgb2grayCuda(const uint8_t *src, uint8_t *dst, int width, int height);
+extern "C" void rgb2grayCpu(const uint8_t *src, uint8_t *dst, int width, int height);
+extern "C" void rgb2grayCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height);
 
 extern "C" void binarizeCpu(const uint8_t *src, uint8_t *dst, int width, int height, uint8_t threshold);
-extern "C" void binarizeCuda(const uint8_t *src, uint8_t *dst, int width, int height, uint8_t threshold);
+extern "C" void binarizeCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height, uint8_t threshold);
 
 __global__ void rgb2hsvKernel(const uint8_t *src, uint8_t *dst, int width, int height);
 __global__ void rgb2grayKernel(const uint8_t *src, uint8_t *dst, int width, int height);
@@ -83,22 +83,22 @@ __global__ void binarizeKernel(const uint8_t *src, uint8_t *dst, int width, int 
 	}
 }
 
-void rgb2hsvCuda(const uint8_t *src, uint8_t *dst, int width, int height) {
+void rgb2hsvCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height) {
 	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	rgb2hsvKernel<<<numBlocks, threadsPerBlock>>>(src, dst, width, height);
+	rgb2hsvKernel<<<numBlocks, threadsPerBlock>>>(devSrc, devDst, width, height);
 }
 
-void rgb2grayCuda(const uint8_t *src, uint8_t *dst, int width, int height) {
+void rgb2grayCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height) {
 	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	rgb2grayKernel<<<numBlocks, threadsPerBlock>>>(src, dst, width, height);
+	rgb2grayKernel<<<numBlocks, threadsPerBlock>>>(devSrc, devDst, width, height);
 }
 
-void binarizeCuda(const uint8_t *src, uint8_t *dst, int width, int height, uint8_t threshold) {
+void binarizeCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height, uint8_t threshold) {
 	dim3 threadsPerBlock(16, 16);
 	dim3 numBlocks(divUp(width, threadsPerBlock.x), divUp(height, threadsPerBlock.y));
-	binarizeKernel<<<numBlocks, threadsPerBlock>>>(src, dst, width, height, threshold);
+	binarizeKernel<<<numBlocks, threadsPerBlock>>>(devSrc, devDst, width, height, threshold);
 }
 
 void rgb2hsvCpu(const uint8_t *src, uint8_t *dst, int width, int height) {
