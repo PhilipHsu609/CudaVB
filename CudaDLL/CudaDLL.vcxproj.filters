@@ -36,6 +36,9 @@
     <CudaCompile Include="ccl.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="hough.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h">

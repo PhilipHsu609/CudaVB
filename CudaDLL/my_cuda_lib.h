@@ -106,4 +106,41 @@ extern "C" DLL_EXPORT void equalizeHistCuda(const uint8_t *devSrc, uint8_t *devD
 extern "C" DLL_EXPORT void connectedComponentsCpu(const uint8_t *src, int *label, int width, int height);
 extern "C" DLL_EXPORT void connectedComponentsCuda(const uint8_t *devSrc, int *devLabel, int width, int height);
 
+/* 
+	* Hough Line Transform
+	* 
+	* Args:
+	* 	src: input image
+	*	lines: output lines
+	*   maxLines: maximum number of lines
+	*	width: image width
+	*	height: image height
+	*	rho: distance resolution of the accumulator in pixels
+	*	theta: angle resolution of the accumulator in radians
+	*	threshold: accumulator threshold parameter. Only those lines are returned that get enough votes ( > threshold )
+	* 
+	* Note: the size of lines should be 2 * maxLines
+	* Note: lines is an array of 2-tuples (rho, theta)
+*/
+extern "C" DLL_EXPORT int houghLinesCpu(
+	const uint8_t * src,
+	float *lines,
+	int maxLines,
+	int width,
+	int height,
+	float rho,
+	float theta,
+	int threshold
+);
+extern "C" DLL_EXPORT int houghLinesCuda(
+	const uint8_t * devSrc,
+	float *lines,
+	int maxLines,
+	int width,
+	int height,
+	float rho,
+	float theta,
+	int threshold
+);
+
 #endif // !MY_CUDA_LIB_H

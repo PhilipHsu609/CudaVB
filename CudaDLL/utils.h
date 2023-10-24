@@ -1,8 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#pragma once
-
 #include <vector>
 #include <cstdint>
 
