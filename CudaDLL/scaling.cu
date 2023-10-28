@@ -3,6 +3,7 @@
 #endif
 
 #include "cuda_runtime.h"
+#include "npp.h"
 #include "device_launch_parameters.h"
 #include "my_cuda_lib.h"
 #include "helper_cuda.h"
@@ -10,13 +11,14 @@
 
 #include <cstdint>
 #include <cstring>
-#include <stdexcept>
+
+static const Npp32f pKernel[5]{ 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f };
 
 extern "C" void pyrUpCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
-//extern "C" void pyrUpCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
+extern "C" void pyrUpCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
 
 extern "C" void pyrDownCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
-//extern "C" void pyrDownCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
+extern "C" void pyrDownCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
 
 extern "C" void bilinearCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height, int dstWidth, int dstHeight);
 extern "C" void bilinearCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, int dstWidth, int dstHeight);
@@ -78,11 +80,55 @@ __global__ void bilinearKernel(const uint8_t *src, uint8_t *dst, int channels, i
 }
 
 void pyrUpCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height) {
-	//throw std::runtime_error("Not implemented");
+	NppiSize oSrcSize{width, height};
+	NppiSize oSizeROI{width * 2, height * 2};
+	NppiPoint oSrcOffset{0, 0};
+
+	Npp32f *pKernelDev;
+	checkCudaErrors(cudaMalloc(&pKernelDev, sizeof(pKernel)));
+	checkCudaErrors(cudaMemcpy(pKernelDev, pKernel, sizeof(pKernel), cudaMemcpyHostToDevice));
+
+	if (channels == 1) {
+		checkNPPErrors(nppiFilterGaussPyramidLayerUpBorder_8u_C1R(
+			src, width * sizeof(uint8_t), oSrcSize, oSrcOffset,
+			dst, width * 2 * sizeof(uint8_t), oSizeROI,
+			2, sizeof(pKernel), pKernelDev, NPP_BORDER_MIRROR
+		));
+	} else if (channels == 3) {
+		checkNPPErrors(nppiFilterGaussPyramidLayerUpBorder_8u_C3R(
+			src, width * channels * sizeof(uint8_t), oSrcSize, oSrcOffset,
+			dst, width * 2 * channels * sizeof(uint8_t), oSizeROI,
+			2, sizeof(pKernel), pKernelDev, NPP_BORDER_MIRROR
+		));
+	}
+
+	checkCudaErrors(cudaFree(pKernelDev));
 }
 
 void pyrDownCuda(const uint8_t *src, uint8_t *dst, int channels, int width, int height) {
-	//throw std::runtime_error("Not implemented");
+	NppiSize oSrcSize{ width, height };
+	NppiSize oSizeROI{ width / 2, height / 2 };
+	NppiPoint oSrcOffset{ 0, 0 };
+
+	Npp32f *pKernelDev;
+	checkCudaErrors(cudaMalloc(&pKernelDev, sizeof(pKernel)));
+	checkCudaErrors(cudaMemcpy(pKernelDev, pKernel, sizeof(pKernel), cudaMemcpyHostToDevice));
+
+	if (channels == 1) {
+		checkNPPErrors(nppiFilterGaussPyramidLayerDownBorder_8u_C1R(
+			src, width * sizeof(uint8_t), oSrcSize, oSrcOffset,
+			dst, width / 2 * sizeof(uint8_t), oSizeROI,
+			2, sizeof(pKernel), pKernelDev, NPP_BORDER_MIRROR
+		));
+	} else if (channels == 3) {
+		checkNPPErrors(nppiFilterGaussPyramidLayerDownBorder_8u_C3R(
+			src, width * channels * sizeof(uint8_t), oSrcSize, oSrcOffset,
+			dst, width / 2 * channels * sizeof(uint8_t), oSizeROI,
+			2, sizeof(pKernel), pKernelDev, NPP_BORDER_MIRROR
+		));
+	}
+
+	checkCudaErrors(cudaFree(pKernelDev));
 }
 
 void pyrUpCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height) {

@@ -39,6 +39,12 @@
     <CudaCompile Include="hough.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="canny.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="template_match.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h">

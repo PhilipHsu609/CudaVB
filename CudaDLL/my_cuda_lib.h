@@ -80,8 +80,8 @@ extern "C" DLL_EXPORT void erodeCuda(const uint8_t *devSrc, uint8_t *devDst, int
 */
 extern "C" DLL_EXPORT void pyrUpCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
 extern "C" DLL_EXPORT void pyrDownCpu(const uint8_t *src, uint8_t *dst, int channels, int width, int height);
-//extern "C" DLL_EXPORT void pyrUpCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
-//extern "C" DLL_EXPORT void pyrDownCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
+extern "C" DLL_EXPORT void pyrUpCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
+extern "C" DLL_EXPORT void pyrDownCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height);
 
 /*
 	* Resize image
@@ -123,7 +123,7 @@ extern "C" DLL_EXPORT void connectedComponentsCuda(const uint8_t *devSrc, int *d
 	* Note: lines is an array of 2-tuples (rho, theta)
 */
 extern "C" DLL_EXPORT int houghLinesCpu(
-	const uint8_t * src,
+	const uint8_t *src,
 	float *lines,
 	int maxLines,
 	int width,
@@ -133,7 +133,7 @@ extern "C" DLL_EXPORT int houghLinesCpu(
 	int threshold
 );
 extern "C" DLL_EXPORT int houghLinesCuda(
-	const uint8_t * devSrc,
+	const uint8_t *devSrc,
 	float *lines,
 	int maxLines,
 	int width,
@@ -142,5 +142,21 @@ extern "C" DLL_EXPORT int houghLinesCuda(
 	float theta,
 	int threshold
 );
+
+/*
+	* Template Matching
+	* 
+	* Note: size of dst is (width - tWidth + 1) * (height - tHeight + 1)
+*/
+extern "C" DLL_EXPORT void matchTemplateCpu(const uint8_t *src, float *dst, int channels, int width, int height, const uint8_t *templ, int tWidth, int tHeight);
+extern "C" DLL_EXPORT void matchTemplateCuda(const uint8_t *src, float *dst, int channels, int width, int height, const uint8_t *templ, int tWidth, int tHeight);
+
+/*
+	* Canny Edge Detection
+	* 
+	* Note: src is a gray scale image
+	* Note: lowThresh and highThresh are in range [0, 255]
+*/
+extern "C" DLL_EXPORT void cannyEdgeCuda(const uint8_t *src, uint8_t *dst, int width, int height, int lowThresh, int highThresh);
 
 #endif // !MY_CUDA_LIB_H

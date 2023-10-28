@@ -5,7 +5,6 @@
 
 #include <vector>
 #include <cstdint>
-#include <stdexcept>
 
 extern "C" int deviceCount();
 
@@ -36,10 +35,9 @@ int borderInterpolate(int p, int len, int borderType) {
 			else
 				p = len - 1 - (p - len) - delta;
 		} while ((unsigned)p >= (unsigned)len);
-	} else if (borderType == 0)
+    } else if (borderType == 0) {
 		p = -1;
-	else
-		throw std::runtime_error("Unknown/unsupported border type");
+    }
 	return p;
 }
 
