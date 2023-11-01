@@ -24,6 +24,9 @@
     <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lib_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils.h">
@@ -35,15 +38,27 @@
     <ClInclude Include="stb\stb_image.h">
       <Filter>stb</Filter>
     </ClInclude>
+    <ClInclude Include="lib_test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="lena_gray.bmp">
+    <Image Include="image\lena_color.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="lena_color.bmp">
+    <Image Include="image\lena_gray.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="test.JPG">
+    <Image Include="image\test.JPG">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="image\lena_canny.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="image\templ_color.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="image\templ_gray.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -133,18 +133,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lib_test.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib_test.h" />
     <ClInclude Include="stb\stb_image.h" />
     <ClInclude Include="stb\stb_image_write.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="lena_color.bmp" />
-    <Image Include="lena_gray.bmp" />
-    <Image Include="test.JPG" />
+    <Image Include="image\lena_canny.bmp" />
+    <Image Include="image\lena_color.bmp" />
+    <Image Include="image\lena_gray.bmp" />
+    <Image Include="image\templ_color.bmp" />
+    <Image Include="image\templ_gray.bmp" />
+    <Image Include="image\test.JPG" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

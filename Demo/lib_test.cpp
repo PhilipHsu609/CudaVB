@@ -178,7 +178,7 @@ void testHough() {
 	toGPU(src, devSrc, width * height * channels * sizeof(uint8_t));
 
 	// call kernel
-	numLines = houghLinesCuda(devSrc, linesPtr, maxLines, width, height, 1, M_PI / 180, 150);
+	numLines = houghLinesCuda(devSrc, linesPtr, maxLines, width, height, 1, M_PI / 180.f, 150);
 
 	// free memory
 	cudaRelease(devSrc);
@@ -189,7 +189,7 @@ void testHough() {
 	std::cout << "Number of lines: " << numLines << std::endl;
 
 	std::vector<float> rho, theta;
-	for(int i = 0; i < numLines; i++) {
+	for (int i = 0; i < numLines; i++) {
 		rho.push_back(linesPtr[2 * i]);
 		theta.push_back(linesPtr[2 * i + 1]);
 	}
@@ -197,5 +197,130 @@ void testHough() {
 	printData(rho);
 	printData(theta);
 
+	stbi_image_free(src);
+}
+
+void testMatchTemplate() {
+	int width, height, bytesPerPixel;
+	int channels = 3;
+	uint8_t *src = stbi_load("./image/lena_color.bmp", &width, &height, &bytesPerPixel, channels);
+	
+	int tempWidth, tempHeight, tempBytesPerPixel;
+	uint8_t *templ = stbi_load("./image/templ_color.bmp", &tempWidth, &tempHeight, &tempBytesPerPixel, channels);
+
+	int dstWidth = width - tempWidth + 1;
+	int dstHeight = height - tempHeight + 1;
+	std::vector<float> dst(dstWidth * dstHeight);
+
+#ifdef TEST_CUDA
+	uint8_t *devSrc{}, *devTempl{};
+	float *devDst{};
+
+	cudaAlloc((void **)&devSrc, width * height * channels * sizeof(uint8_t));
+	cudaAlloc((void **)&devTempl, tempWidth * tempHeight * channels * sizeof(uint8_t));
+	cudaAlloc((void **)&devDst, dstWidth * dstHeight * sizeof(float));
+
+	toGPU(src, devSrc, width * height * channels * sizeof(uint8_t));
+	toGPU(templ, devTempl, tempWidth * tempHeight * channels * sizeof(uint8_t));
+
+	matchTemplateCuda(devSrc, devDst, channels, width, height, devTempl, tempWidth, tempHeight);
+
+	toCPU(devDst, dst.data(), dstWidth * dstHeight * sizeof(float));
+
+	cudaRelease(devSrc);
+	cudaRelease(devTempl);
+	cudaRelease(devDst);
+#else
+	matchTemplateCpu(src, dst.data(), channels, width, height, templ, tempWidth, tempHeight);
+#endif
+
+	auto maxLoc = std::max_element(dst.begin(), dst.end());
+
+	int x = static_cast<int>(maxLoc - dst.begin()) % dstWidth;
+	int y = static_cast<int>(maxLoc - dst.begin()) / dstWidth;
+
+	std::cout << "Max Loc: " << x << ", " << y << std::endl;
+	std::cout << "Max value: " << *maxLoc << std::endl;
+
+	stbi_image_free(src);
+	stbi_image_free(templ);
+}
+
+void testCanny() {
+	int width, height, bytesPerPixel;
+	int channels = 1;
+	uint8_t *src = stbi_load("./image/lena_gray.bmp", &width, &height, &bytesPerPixel, channels);
+
+	std::vector<uint8_t> dst(width * height);
+	uint8_t *dstPtr = dst.data();
+
+	uint8_t *devSrc{}, *devDst{};
+	cudaAlloc((void **)&devSrc, width * height * sizeof(uint8_t));
+	cudaAlloc((void **)&devDst, width * height * sizeof(uint8_t));
+
+	toGPU(src, devSrc, width * height * sizeof(uint8_t));
+
+	cannyEdgeCuda(devSrc, devDst, width, height, 50, 170);
+
+	toCPU(devDst, dstPtr, width * height * sizeof(uint8_t));
+
+	stbi_write_bmp("./image/output_canny.bmp", width, height, channels, dst.data());
+
+	cudaRelease(devSrc);
+	cudaRelease(devDst);
+	stbi_image_free(src);
+}
+
+void testPyrUp() {
+	int width, height, bytesPerPixel;
+	int channels = 3;
+	uint8_t *src = stbi_load("./image/lena_color.bmp", &width, &height, &bytesPerPixel, channels);
+
+	int dstWidth = width * 2;
+	int dstHeight = height * 2;
+	std::vector<uint8_t> dst(dstWidth * dstHeight * channels);
+	uint8_t *dstPtr = dst.data();
+
+	uint8_t *devSrc{}, *devDst{};
+	cudaAlloc((void **)&devSrc, width * height * channels * sizeof(uint8_t));
+	cudaAlloc((void **)&devDst, dstWidth * dstHeight * channels * sizeof(uint8_t));
+
+	toGPU(src, devSrc, width * height * channels * sizeof(uint8_t));
+
+	pyrUpCuda(devSrc, devDst, channels, width, height);
+
+	toCPU(devDst, dstPtr, dstWidth * dstHeight * channels * sizeof(uint8_t));
+
+	stbi_write_bmp("./image/output_pyr.bmp", dstWidth, dstHeight, channels, dst.data());
+
+	cudaRelease(devSrc);
+	cudaRelease(devDst);
+	stbi_image_free(src);
+}
+
+void testPyrDown() {
+	int width, height, bytesPerPixel;
+	int channels = 1;
+	uint8_t *src = stbi_load("./image/lena_gray.bmp", &width, &height, &bytesPerPixel, channels);
+
+	int dstWidth = width / 2;
+	int dstHeight = height / 2;
+	std::vector<uint8_t> dst(dstWidth * dstHeight * channels);
+	uint8_t *dstPtr = dst.data();
+
+	uint8_t *devSrc{}, *devDst{};
+	cudaAlloc((void **)&devSrc, width * height * channels * sizeof(uint8_t));
+	cudaAlloc((void **)&devDst, dstWidth * dstHeight * channels * sizeof(uint8_t));
+
+	toGPU(src, devSrc, width * height * channels * sizeof(uint8_t));
+
+	pyrDownCuda(devSrc, devDst, channels, width, height);
+
+	toCPU(devDst, dstPtr, dstWidth * dstHeight * channels * sizeof(uint8_t));
+
+	stbi_write_bmp("./image/output_pyr.bmp", dstWidth, dstHeight, channels, dst.data());
+
+	cudaRelease(devSrc);
+	cudaRelease(devDst);
 	stbi_image_free(src);
 }

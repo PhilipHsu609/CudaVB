@@ -5,5 +5,9 @@ void testCCL();
 void testBilinear();
 void testConv();
 void testHough();
+void testMatchTemplate();
+void testCanny();
+void testPyrUp();
+void testPyrDown();
 
 #endif
