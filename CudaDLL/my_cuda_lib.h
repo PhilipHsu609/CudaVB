@@ -159,4 +159,18 @@ extern "C" DLL_EXPORT void matchTemplateCuda(const uint8_t *src, float *dst, int
 */
 extern "C" DLL_EXPORT void cannyEdgeCuda(const uint8_t *src, uint8_t *dst, int width, int height, int lowThresh, int highThresh);
 
+/*
+	* Rotate image
+	*
+	* Note: angle is in degree
+	* Note: if centerX and centerY are not specified, the center of the image is used
+*/
+extern "C" DLL_EXPORT void rotateCuda(const uint8_t *devSrc, uint8_t *devDst, int channels, int width, int height, double angle, double centerX = -1.0, double centerY = -1.0);
+
+/*
+	* Thinning
+*/
+extern "C" DLL_EXPORT void thinningCpu(const uint8_t *src, uint8_t *dst, int width, int height);
+extern "C" DLL_EXPORT void thinningCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height);
+
 #endif // !MY_CUDA_LIB_H

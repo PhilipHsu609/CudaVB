@@ -1,6 +1,6 @@
 #include "lib_test.h"
 
 int main() {
-	testPyrDown();
+	testThinning();
 	return 0;
 }

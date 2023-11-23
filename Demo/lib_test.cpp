@@ -324,3 +324,65 @@ void testPyrDown() {
 	cudaRelease(devDst);
 	stbi_image_free(src);
 }
+
+void testRotate() {
+	int width, height, bbp;
+	int channels = 3;
+	uint8_t *src = stbi_load("./image/lena_color.bmp", &width, &height, &bbp, channels);
+
+	std::vector<uint8_t> dst(width * height * channels);
+	uint8_t *dstPtr = dst.data();
+
+	uint8_t *devSrc{}, *devDst{};
+	cudaAlloc((void **)&devSrc, width * height * channels * sizeof(uint8_t));
+	cudaAlloc((void **)&devDst, width * height * channels * sizeof(uint8_t));
+
+	toGPU(src, devSrc, width * height * channels * sizeof(uint8_t));
+
+	rotateCuda(devSrc, devDst, channels, width, height, -23.194);
+
+	toCPU(devDst, dstPtr, width * height * channels * sizeof(uint8_t));
+
+	stbi_write_bmp("./image/output_rotate.bmp", width, height, channels, dst.data());
+
+	cudaRelease(devSrc);
+	cudaRelease(devDst);
+	stbi_image_free(src);
+}
+
+void testThinning() {
+	int width, height, bbp;
+	int channels = 1;
+	uint8_t *src = stbi_load("./image/tree.bmp", &width, &height, &bbp, channels);
+
+	std::vector<uint8_t> dst(width * height * channels);
+	uint8_t *dstPtr = dst.data();
+
+#ifdef TEST_CUDA
+	uint8_t *devSrc{}, *devBw{}, *devDst{};
+	cudaAlloc((void **)&devSrc, width * height * channels * sizeof(uint8_t));
+	cudaAlloc((void **)&devBw, width * height * channels * sizeof(uint8_t));
+	cudaAlloc((void **)&devDst, width * height * channels * sizeof(uint8_t));
+
+	toGPU(src, devSrc, width * height * channels * sizeof(uint8_t));
+
+	binarizeCuda(devSrc, devBw, width, height, getThreshVal_OtsuCuda(devSrc, width, height));
+	thinningCuda(devBw, devDst, width, height);
+
+	toCPU(devDst, dstPtr, width * height * channels * sizeof(uint8_t));
+
+	cudaRelease(devSrc);
+	cudaRelease(devBw);
+	cudaRelease(devDst);
+#else
+	std::vector<uint8_t> bw(width * height * channels);
+	uint8_t *bwPtr = bw.data();
+
+	binarizeCpu(src, bwPtr, width, height, getThreshVal_OtsuCpu(src, width, height));
+	thinningCpu(bwPtr, dstPtr, width, height);
+#endif
+
+	stbi_write_bmp("./image/output_thin.bmp", width, height, channels, dst.data());
+
+	stbi_image_free(src);
+}

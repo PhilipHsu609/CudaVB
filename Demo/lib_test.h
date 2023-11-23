@@ -9,5 +9,7 @@ void testMatchTemplate();
 void testCanny();
 void testPyrUp();
 void testPyrDown();
+void testRotate();
+void testThinning();
 
 #endif

@@ -45,6 +45,12 @@
     <CudaCompile Include="template_match.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="rotate.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="thinning.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h">
