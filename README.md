@@ -33,3 +33,4 @@ Each algorithm is implemented in both parallel (CUDA) and non-parallel version. 
 - [NVIDIA Performance Primitives](https://developer.nvidia.com/npp)
 - [YACCLAB](https://github.com/prittt/YACCLAB)
 - [dustynv/jetson-utils](https://github.com/dusty-nv/jetson-utils)
+- [nothings/stb](https://github.com/nothings/stb)
