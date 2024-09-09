@@ -173,4 +173,8 @@ extern "C" DLL_EXPORT void rotateCuda(const uint8_t *devSrc, uint8_t *devDst, in
 extern "C" DLL_EXPORT void thinningCpu(const uint8_t *src, uint8_t *dst, int width, int height);
 extern "C" DLL_EXPORT void thinningCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height);
 
+extern "C" DLL_EXPORT void medianFilter(const uint8_t * src, uint8_t * dst, int channels, int width, int height, int kernelWidth, int kernelHeight);
+
+extern "C" DLL_EXPORT unsigned char foundAryMaxCuda(const uint8_t * src, int width, int height);
+
 #endif // !MY_CUDA_LIB_H

@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <iostream>
 
-void thinningCpu(const uint8_t *src, uint8_t *dst, int width, int height);
-void thinningCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height);
+extern "C" void thinningCpu(const uint8_t *src, uint8_t *dst, int width, int height);
+extern "C" void thinningCuda(const uint8_t *devSrc, uint8_t *devDst, int width, int height);
 
 std::vector<uint8_t> neighbor(const uint8_t *src, int y, int x, int width);
 int ZSA(const std::vector<uint8_t> &n);

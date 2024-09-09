@@ -94,6 +94,7 @@
     <CudaCompile Include="cvt_color.cu" />
     <CudaCompile Include="hist_eq.cu" />
     <CudaCompile Include="hough.cu" />
+    <CudaCompile Include="median.cu" />
     <CudaCompile Include="memory.cpp" />
     <CudaCompile Include="morph.cu" />
     <CudaCompile Include="rotate.cu" />

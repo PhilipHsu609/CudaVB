@@ -11,5 +11,6 @@ void testPyrUp();
 void testPyrDown();
 void testRotate();
 void testThinning();
+void testMedian();
 
 #endif

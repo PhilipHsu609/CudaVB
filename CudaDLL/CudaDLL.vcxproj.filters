@@ -51,6 +51,9 @@
     <CudaCompile Include="thinning.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="median.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_cuda_lib.h">

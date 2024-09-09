@@ -386,3 +386,35 @@ void testThinning() {
 
 	stbi_image_free(src);
 }
+
+void testMedian() {
+	int width, height, bbp;
+	int channels = 1;
+	uint8_t *src = stbi_load("./image/lena_gray.bmp", &width, &height, &bbp, channels);
+
+	std::vector<uint8_t> dst(width * height * channels);
+	uint8_t *dstPtr = dst.data();
+
+	uint8_t *devSrc{}, *devDst{};
+	cudaAlloc((void **)&devSrc, width * height * channels * sizeof(uint8_t));
+	cudaAlloc((void **)&devDst, width * height * channels * sizeof(uint8_t));
+
+	toGPU(src, devSrc, width * height * channels * sizeof(uint8_t));
+
+	medianFilter(devSrc, devDst, channels, width, height, 10, 10);
+
+	unsigned char maxi = foundAryMaxCuda(devSrc, width, height);
+
+	toCPU(devDst, dstPtr, width * height * channels * sizeof(uint8_t));
+
+	unsigned char maxi2 = *std::max_element(dst.begin(), dst.end());
+
+	std::cout << "Max value: " << static_cast<int>(maxi) << std::endl;
+	std::cout << "Max value: " << static_cast<int>(maxi2) << std::endl;
+
+	stbi_write_bmp("./image/output_median.bmp", width, height, channels, dst.data());
+
+	cudaRelease(devSrc);
+	cudaRelease(devDst);
+	stbi_image_free(src);
+}
